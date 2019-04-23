@@ -11,13 +11,72 @@ output:
     highlight: tango
 ---
 
-# H1
+# Carga de Datos
 
-The quick brown fox jumps over the lazy dog.
+Aqui cargamos los datos de las fuentes blah blah...
 
-```{r a}
-a_var <- 1:3
-a_var
+## Hurto 2017
 
-head(a_var)
+```{r load_hurto}
+data_hurto_raw <- read.csv("hurto.csv")
+str(data_hurto_raw)
+head(data_hurto_raw)
+```
+
+## Pobloacion por Municipio
+
+```{r load_municipios}
+data_municipios_raw <- read.csv("municipios.csv")
+str(data_municipios_raw)
+head(data_municipios_raw)
+```
+
+# Limpieza
+
+Limpiaremos blah...
+
+## Hurto 2017
+
+```{r clean_hurto}
+# TODO
+```
+
+## Poblacion por municipio
+
+Dejamos:
+
+* MPIO que es el nombre del municipio
+* X2017 que es la poblacion por municipio en 2017
+
+```{r clean_minicipios}
+target_columns <- c("MPIO", "X2017")
+data_municipios_tidy <- data_municipios_raw[,which(colnames(data_municipios_raw) %in% target_columns)]
+
+str(data_municipios_tidy)
+```
+
+Normalizamos el nombre de cada columna
+
+```{r norm_municipios}
+colnames(data_municipios_tidy) <- c("municipio", "poblacion_2017")
+str(data_municipios_tidy)
+head(data_municipios_tidy)
+```
+
+Convertimos la columna poblacion_2017 en numerica
+
+```{r types_municipios}
+factor_to_num <- function(a_factor) {
+  a_char <- as.character(a_factor)
+  no_commas <- gsub(",", "", a_char)
+  num <- as.numeric(no_commas)
+  
+  return(num)
+}
+
+data_municipios_tidy$poblacion_2017 <- sapply(data_municipios_tidy$poblacion_2017, factor_to_num)
+data_municipios <- data_municipios_tidy
+
+str(data_municipios)
+head(data_municipios)
 ```
