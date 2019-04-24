@@ -26,12 +26,11 @@ library(scales)
 
 Aqui cargamos los datos de las fuentes blah blah...
 
-## Hurto 2017 - Test
+## Hurto 2017
 
 ```{r load_hurto}
 data_hurto_raw <- read.csv("hurto.csv")
 str(data_hurto_raw)
-head(data_hurto_raw)
 ```
 
 ## Pobloacion por Municipio
@@ -39,7 +38,6 @@ head(data_hurto_raw)
 ```{r load_municipios}
 data_municipios_raw <- read.csv("municipios.csv")
 str(data_municipios_raw)
-head(data_municipios_raw)
 ```
 
 # Limpieza Dataset Hurto
@@ -84,7 +82,21 @@ remove_capital <- function(city_factor) {
   return(no_capital)
 }
 
-data_hurto_tidy$municipio <- sapply(data_hurto_tidy$municipio, remove_capital)
+data_hurto_tidy$municipio <- as.factor(sapply(data_hurto_tidy$municipio, remove_capital))
+str(data_hurto_tidy)
+summary(data_hurto_tidy)
+```
+
+Se cambian todos los `-` por `NA` y se eliminan las observaciones con por lo menos un `NA`.
+
+```{r nas}
+which(names(summary(data_hurto_tidy$clase_de_sitio)) == '-')
+
+data_hurto <- data_hurto_tidy
+data_hurto[data_hurto_tidy == "-"] <- NA
+data_hurto <- data_hurto[complete.cases(data_hurto),]
+
+str(data_hurto)
 ```
 
 ## Poblacion por municipio
@@ -106,7 +118,6 @@ Normalizamos el nombre de cada columna
 ```{r norm_municipios}
 colnames(data_municipios_tidy) <- c("municipio", "poblacion_2017")
 str(data_municipios_tidy)
-head(data_municipios_tidy)
 ```
 
 Convertimos la columna poblacion_2017 en numerica
@@ -124,7 +135,6 @@ data_municipios_tidy$poblacion_2017 <- sapply(data_municipios_tidy$poblacion_201
 data_municipios_tidy$municipio <- sapply(data_municipios_tidy$municipio, toupper)
 
 str(data_municipios_tidy)
-head(data_municipios_tidy)
 ```
 
 Eliminamos la fila que tiene el total nacional
@@ -133,7 +143,6 @@ Eliminamos la fila que tiene el total nacional
 data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL",]
 
 str(data_municipios_tidy)
-head(data_municipios_tidy)
 ```
 
 Eliminar la coma de `BOGOTA, D.C`
@@ -152,7 +161,7 @@ data_municipios <- data_municipios_tidy
 Calculamos indice por municipio...
 
 ```{r index}
-hurtos_per_muni <- data_hurto_tidy %>%
+hurtos_per_muni <- data_hurto %>%
   group_by(municipio) %>%
   summarize(
     cantidad_hurtos = n()
@@ -167,7 +176,6 @@ detach(muni_joined)
 
 muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017),]
 
-head(muni_joined_sorted, 30)
 sum(is.na(muni_joined$cantidad_hurtos))
 ```
 
