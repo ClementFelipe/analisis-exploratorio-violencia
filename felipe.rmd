@@ -13,6 +13,7 @@ output:
 
 ```{r libs, include=FALSE}
 library(tidyverse)
+gctorture(FALSE)
 ```
 
 # Carga de Datos
@@ -84,7 +85,6 @@ Se cambian todos los `-` por `NA` y se eliminan las observaciones con por lo men
 
 ```{r nas}
 which(names(summary(data_hurto_tidy$clase_de_sitio)) == '-')
-data_hurto_tidy$clase_de_sitio
 
 data_hurto <- data_hurto_tidy
 data_hurto[data_hurto_tidy == "-"] <- NA
