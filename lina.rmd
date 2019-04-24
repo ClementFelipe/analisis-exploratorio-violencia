@@ -181,13 +181,29 @@ muni_top_sorted
 
 # Analisis Lina
 
-# Carga de Datos
+#Analisis univariado dataset hurto
+Aquí se tiene el analisis univariado para las siguientes variables:
+*Departamento
+*Zona
+*Clase.sitio
+*arma empleada
+*movil victima
+*sexo
+
+```{r uni_hurto}
+str(data_hurto_tidy$sexo)
+
+```
+
+
+
+# Carga de Datos Incautación armas de fuego 2017
 
 Aqui cargamos los datos de las Incautación armas de fuego 2017
 
 ## Incautación armas de fuego 2017
 
-```{r load_hurto}
+```{r load_fuego}
 data_incauta_raw <- read.csv("Incautafuego_2017.csv")
 str(data_incauta_raw)
 head(data_incauta_raw)
@@ -208,7 +224,7 @@ Se eliminan las columnas:
 * `Código.DANE`
 * `Cantidad`
 
-```{r delete_hurtos}
+```{r delete_fuego}
 removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
 
 data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% removable_columns_2)]
@@ -218,7 +234,7 @@ str(data_incauta_tidy)
 
 Normalizamos los nombres de las columnas.
 
-```{r norm_hurtos}
+```{r norm_fuego}
 colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
 
 str(data_incauta_tidy)
