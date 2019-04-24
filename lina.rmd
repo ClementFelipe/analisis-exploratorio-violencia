@@ -13,6 +13,13 @@ output:
 
 ```{r libs, include=FALSE}
 library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(pastecs)
+library(psych)
+library(ggcorrplot)
+library(fastDummies)
+library(scales)
 ```
 
 # Carga de Datos
@@ -35,7 +42,7 @@ str(data_municipios_raw)
 head(data_municipios_raw)
 ```
 
-# Limpieza
+# Limpieza Dataset Hurto
 
 Limpiaremos blah...
 
@@ -173,3 +180,47 @@ muni_top_sorted
 ```
 
 # Analisis Lina
+
+# Carga de Datos
+
+Aqui cargamos los datos de las Incautación armas de fuego 2017
+
+## Incautación armas de fuego 2017
+
+```{r load_hurto}
+data_incauta_raw <- read.csv("Incautafuego_2017.csv")
+str(data_incauta_raw)
+head(data_incauta_raw)
+```
+
+
+# Limpieza Dataset sobre armas incautadas en 2017
+
+Se procede a limpiar el data set
+
+## Armas fuego incautadas 2017
+
+Se eliminan las columnas:
+
+* `Fecha`,
+* `Hora`
+* `Permiso`
+* `Código.DANE`
+* `Cantidad`
+
+```{r delete_hurtos}
+removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
+
+data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% removable_columns_2)]
+
+str(data_incauta_tidy)
+```
+
+Normalizamos los nombres de las columnas.
+
+```{r norm_hurtos}
+colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
+
+str(data_incauta_tidy)
+```
+
