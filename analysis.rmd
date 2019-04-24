@@ -15,7 +15,7 @@ output:
 
 Aqui cargamos los datos de las fuentes blah blah...
 
-## Hurto 2017
+## Hurto 2017 - Test
 
 ```{r load_hurto}
 data_hurto_raw <- read.csv("hurto.csv")
