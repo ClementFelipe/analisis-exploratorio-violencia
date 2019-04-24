@@ -86,11 +86,9 @@ Se cambian todos los `-` por `NA` y se eliminan las observaciones con por lo men
 which(names(summary(data_hurto_tidy$clase_de_sitio)) == '-')
 data_hurto_tidy$clase_de_sitio
 
-data_hurto_tidy
-
 data_hurto <- data_hurto_tidy
 data_hurto[data_hurto_tidy == "-"] <- NA
-data_hurto[complete.cases(data_hurto),]
+data_hurto <- data_hurto[complete.cases(data_hurto),]
 
 str(data_hurto)
 ```
@@ -157,7 +155,7 @@ data_municipios <- data_municipios_tidy
 Calculamos indice por municipio...
 
 ```{r index}
-hurtos_per_muni <- data_hurto_tidy %>%
+hurtos_per_muni <- data_hurto %>%
   group_by(municipio) %>%
   summarize(
     cantidad_hurtos = n()
