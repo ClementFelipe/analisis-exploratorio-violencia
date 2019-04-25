@@ -189,7 +189,7 @@ muni_top_sorted
 
 # Analisis Lina
 
-#Analisis univariado dataset hurto
+##Analisis univariado dataset hurto {.tabset .tabset-pills}
 Aquí se tiene el analisis univariado para las siguientes variables:
 *Departamento
 *Zona
@@ -198,31 +198,77 @@ Aquí se tiene el analisis univariado para las siguientes variables:
 *movil victima
 *sexo
 
-```{r uni_hurto}
-str(data_hurto_tidy$sexo)
+A continuación empezamos a analizar cada una de las variables listadas.
+Vamos a observar como esta la distribución de estos datos
 
+```{r uni_hurtos_l}
+
+columns_f_l <- c("departamento", "zona", "dia", "clase_de_sitio", "arma_empleada", "movil_victima", "sexo")
+data_hurto_f_l <- data_hurto[, colnames(data_hurto) %in% columns_f_l]
+summary(data_hurto_f_l)
+```
+```{r uni_fact_func_l}
+plot_factor <- function(data, column, top = 30) {
+  group_count <- data %>%
+    group_by_(column) %>%
+    summarise(
+      cantidad_hurtos = n()
+    ) %>%
+    arrange(desc(cantidad_hurtos)) %>%
+    top_n(top)
+  ggplot(group_count) +
+    geom_bar(
+      aes_string(x = paste0("reorder(", column, ", cantidad_hurtos)"), y = "cantidad_hurtos"),
+      stat = "identity"
+    ) +
+    coord_flip() +
+    labs(x = column, y = "Cantidad de hurtos reportados") +
+    theme(axis.text.y = element_text(size = (rel(0.8))))
+}
+```
+
+###Departamentos
+```{r uni_hurto_departamento, warning=FALSE}
+plot_factor(data_hurto_f_l, "departamento", 20)
+```
+
+###Zona
+```{r uni_hurto_zona, warning=FALSE}
+plot_factor(data_hurto_f_l, "zona", 20)
+```
+
+###Clase de sitio
+```{r uni_hurto_clase_de_sitio, warning=FALSE}
+plot_factor(data_hurto_f_l, "clase_de_sitio", 20)
+#summary(data_hurto_tidy$clase_de_sitio) #esta da un output muy largo
+```
+
+###Arma empleada
+```{r uni_hurto_arma, warning=FALSE}
+plot_factor(data_hurto_f_l, "arma_empleada", 20)
+```
+
+###Movil Víctima
+```{r uni_hurto_movil, warning=FALSE}
+plot_factor(data_hurto_f_l, "movil_victima", 20)
+```
+
+###Sexo
+```{r uni_hurto_Sexo, warning=FALSE}
+plot_factor(data_hurto_f_l, "sexo", 20)
 ```
 
 
-
-# Carga de Datos Incautación armas de fuego 2017
-
-Aqui cargamos los datos de las Incautación armas de fuego 2017
-
-## Incautación armas de fuego 2017
+# Dataset Incautación armas de fuego 2017
 
 ```{r load_fuego}
 data_incauta_raw <- read.csv("Incautafuego_2017.csv")
 str(data_incauta_raw)
 head(data_incauta_raw)
 ```
-
-
-# Limpieza Dataset sobre armas incautadas en 2017
+## Limpieza Dataset sobre armas incautadas en 2017
 
 Se procede a limpiar el data set
-
-## Armas fuego incautadas 2017
 
 Se eliminan las columnas:
 
@@ -239,12 +285,77 @@ data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% re
 
 str(data_incauta_tidy)
 ```
-
 Normalizamos los nombres de las columnas.
 
 ```{r norm_fuego}
 colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
-
 str(data_incauta_tidy)
 ```
 
+##Analisis univariado dataset Armas {.tabset .tabset-pills}
+Aquí se tiene el analisis univariado para las siguientes variables:
+*Departamento
+*Municipio
+*Día
+*Clase de arma
+*Zona
+*Clase de sitio
+
+A continuación empezamos a analizar cada una de las variables listadas.
+Vamos a observar como esta la distribución de estos datos
+
+```{r uni_armas_l}
+data_armas<-data_incauta_tidy
+columns_f_l_armas <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
+data_hurto_f_l_armas <- data_armas[, colnames(data_armas) %in% columns_f_l_armas]
+summary(data_hurto_f_l_armas)
+```
+```{r uni_fact_func_l_armas}
+plot_factor <- function(data, column, top = 30) {
+  group_count <- data %>%
+    group_by_(column) %>%
+    summarise(
+      cantidad_armas = n()
+    ) %>%
+    arrange(desc(cantidad_armas)) %>%
+    top_n(top)
+  ggplot(group_count) +
+    geom_bar(
+      aes_string(x = paste0("reorder(", column, ", cantidad_armas)"), y = "cantidad_armas"),
+      stat = "identity"
+    ) +
+    coord_flip() +
+    labs(x = column, y = "Cantidad reportada de armas incautadas") +
+    theme(axis.text.y = element_text(size = (rel(0.8))))
+}
+```
+
+###Departamentos
+```{r uni_armas_depto, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "departamento", 20)
+```
+
+###Municipio
+```{r uni_armas_muni, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "municipio", 20)
+```
+
+###Día
+```{r uni_armas_dia, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "dia", 20)
+```
+
+###Clase de arma empleada
+```{r uni_armas_clase_de_arma, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "clase_de_arma", 20)
+```
+
+###Zona
+```{r uni_armas_zona, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "zona", 20)
+```
+
+###Clase de sitio
+```{r uni_armas_clase_de_sitio, warning=FALSE}
+plot_factor(data_hurto_f_l_armas, "clase_de_sitio", 20)
+```
