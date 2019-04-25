@@ -250,3 +250,26 @@ plot_factor(data_hurto_f, "clase_de_empleado", 20)
 ```{r uni_esc, warning=FALSE}
 plot_factor(data_hurto_f, "escolaridad")
 ```
+
+### Edad
+
+```{r uni_edad}
+edad_count <- data_hurto_f %>%
+  group_by(edad) %>%
+  summarise(
+    cantidad_hurtos = n()
+  )
+
+ggplot(edad_count) +
+  geom_point(aes(x = edad, y = cantidad_hurtos))
+```
+
+Existen unos datos atipicos de edades mayores a 100, los eliminamos par visualizar la distribucion resultante
+
+```{r uni_edad_fix}
+edad_count_fix <- edad_count %>%
+  filter(edad < 100)
+
+ggplot(edad_count_fix) +
+  geom_point(aes(x = edad, y = cantidad_hurtos))
+```
