@@ -53,7 +53,7 @@ Se eliminan las columnas:
 ```{r delete_hurtos}
 removable_columns <- c("Fecha", "Hora", "Barrio", "País.de.nacimiento", "Profesión", "Código.DANE", "Cantidad")
 
-data_hurto_tidy <- data_hurto_raw[,-which(colnames(data_hurto_raw) %in% removable_columns)]
+data_hurto_tidy <- data_hurto_raw[, -which(colnames(data_hurto_raw) %in% removable_columns)]
 
 str(data_hurto_tidy)
 ```
@@ -72,23 +72,22 @@ Se elimina `(CT)` de los datos en la columna `Municipio`.
 remove_capital <- function(city_factor) {
   city <- as.character(city_factor)
   no_capital <- gsub(" \\(CT\\)", "", city)
-  
+
   return(no_capital)
 }
 
 data_hurto_tidy$municipio <- as.factor(sapply(data_hurto_tidy$municipio, remove_capital))
 str(data_hurto_tidy)
-summary(data_hurto_tidy)
 ```
 
 Se cambian todos los `-` por `NA` y se eliminan las observaciones con por lo menos un `NA`.
 
 ```{r nas}
-which(names(summary(data_hurto_tidy$clase_de_sitio)) == '-')
+which(names(summary(data_hurto_tidy$clase_de_sitio)) == "-")
 
 data_hurto <- data_hurto_tidy
 data_hurto[data_hurto_tidy == "-"] <- NA
-data_hurto <- data_hurto[complete.cases(data_hurto),]
+data_hurto <- data_hurto[complete.cases(data_hurto), ]
 
 str(data_hurto)
 ```
@@ -134,7 +133,7 @@ str(data_municipios_tidy)
 Eliminamos la fila que tiene el total nacional
 
 ```{r remove_total}
-data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL",]
+data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL", ]
 
 str(data_municipios_tidy)
 ```
@@ -142,10 +141,10 @@ str(data_municipios_tidy)
 Eliminar la coma de `BOGOTA, D.C`
 
 ```{r rem_bog}
-bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.",]
+bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ]
 bogota_row$municipio <- c("BOGOTÁ D.C.")
 
-data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.",] <- bogota_row
+data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ] <- bogota_row
 
 data_municipios <- data_municipios_tidy
 ```
@@ -168,7 +167,7 @@ attach(muni_joined)
 muni_joined$indice_hurtos <- (cantidad_hurtos / poblacion_2017) * 1000
 detach(muni_joined)
 
-muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017),]
+muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017), ]
 
 sum(is.na(muni_joined$cantidad_hurtos))
 ```
@@ -177,6 +176,100 @@ Pizza
 
 ```{r ugh}
 muni_top <- head(muni_joined_sorted, 30)
-muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos),]
+muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos), ]
 muni_top_sorted
+```
+
+# Analisis Univariado
+
+## Hurtos {.tabset .tabset-pills}
+
+```{r uni_hurtos}
+columns_f <- c("edad", "escolaridad", "dia", "municipio", "movil_agresor", "clase_de_empleado", "estado_civil")
+
+data_hurto_f <- data_hurto[, colnames(data_hurto) %in% columns_f]
+
+summary(data_hurto_f)
+```
+
+Se utilizara la siguiente funcion para graficar los factores del data set.
+
+```{r uni_fact_func}
+plot_factor <- function(data, column, top = 30) {
+  group_count <- data %>%
+    group_by_(column) %>%
+    summarise(
+      cantidad_hurtos = n()
+    ) %>%
+    arrange(desc(cantidad_hurtos)) %>%
+    top_n(top)
+
+  ggplot(group_count) +
+    geom_bar(
+      aes_string(x = paste0("reorder(", column, ", cantidad_hurtos)"), y = "cantidad_hurtos"),
+      stat = "identity"
+    ) +
+    coord_flip() +
+    labs(x = column, y = "Cantidad de hurtos reportados") +
+    theme(axis.text.y = element_text(size = (rel(0.8))))
+}
+```
+
+### Municipio
+
+```{r uni_muni, warning=FALSE}
+plot_factor(data_hurto_f, "municipio", 20)
+```
+
+### Día
+
+```{r uni_dia, warning=FALSE}
+plot_factor(data_hurto_f, "dia")
+```
+
+### Móvil Agresor
+
+```{r uni_movil, warning=FALSE}
+plot_factor(data_hurto_f, "movil_agresor", 20)
+```
+
+### Estado Civil
+
+```{r uni_estado, warning=FALSE}
+plot_factor(data_hurto_f, "estado_civil")
+```
+
+### Clase de Empleado
+
+```{r uni_clase, warning=FALSE}
+plot_factor(data_hurto_f, "clase_de_empleado", 20)
+```
+
+### Escolaridad
+
+```{r uni_esc, warning=FALSE}
+plot_factor(data_hurto_f, "escolaridad")
+```
+
+### Edad
+
+```{r uni_edad}
+edad_count <- data_hurto_f %>%
+  group_by(edad) %>%
+  summarise(
+    cantidad_hurtos = n()
+  )
+
+ggplot(edad_count) +
+  geom_point(aes(x = edad, y = cantidad_hurtos))
+```
+
+Existen unos datos atipicos de edades mayores a 100, los eliminamos par visualizar la distribucion resultante
+
+```{r uni_edad_fix}
+edad_count_fix <- edad_count %>%
+  filter(edad < 100)
+
+ggplot(edad_count_fix) +
+  geom_point(aes(x = edad, y = cantidad_hurtos))
 ```
