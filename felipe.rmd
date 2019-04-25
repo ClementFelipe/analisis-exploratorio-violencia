@@ -16,7 +16,7 @@ library(tidyverse)
 gctorture(FALSE)
 ```
 
-# Carga de Datos
+# Carga de Datos {.tabset .tabset-pills}
 
 Aqui cargamos los datos de las fuentes blah blah...
 
@@ -34,7 +34,14 @@ data_municipios_raw <- read.csv("municipios.csv")
 str(data_municipios_raw)
 ```
 
-# Limpieza
+## Estadisticas Educación por ETC
+
+```{r load_edu}
+data_educacion_raw <- read.csv("educacion.csv")
+str(data_educacion_raw)
+```
+
+# Limpieza {.tabset .tabset-pills}
 
 Limpiaremos blah...
 
@@ -149,6 +156,49 @@ data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ] <- bog
 data_municipios <- data_municipios_tidy
 ```
 
+## Educacion
+
+Eliminamos la columna `CÓDIGO_ETC` 
+
+```{r clean_edu}
+data_educacion_tidy <- data_educacion_raw
+
+data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy) == "CÓDIGO_ETC")]
+str(data_educacion_tidy)
+```
+
+Normalizamos los nombres de las columnas
+
+```{r clean_edu_col}
+colnames(data_educacion_tidy) <- sapply(colnames(data_educacion_tidy), tolower)
+```
+
+Conservamos solo el año 2017 y posteriormente eliminamos la columna
+
+```{r clean_edu_year}
+data_educacion_tidy <- data_educacion_tidy[data_educacion_tidy$año == 2017, ]
+data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy) == "año")]
+
+str(data_educacion_tidy)
+```
+
+Transformamos las ETC en mayuscula y removemos el (ETC)
+
+```{r clean_edu_upper}
+remove_etc <- function(city_factor) {
+  city <- as.character(city_factor)
+  no_capital <- gsub(" \\(ETC\\)", "", city)
+
+  return(no_capital)
+}
+
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, toupper)
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_etc)
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_capital)
+
+data_educacion <- data_educacion_tidy
+```
+
 # Pre-procesamiento
 
 Calculamos indice por municipio...
@@ -178,6 +228,26 @@ Pizza
 muni_top <- head(muni_joined_sorted, 30)
 muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos), ]
 muni_top_sorted
+```
+
+Añadimos la información del dataset de educación
+
+```{r pre_edu}
+cols_edu <- c("etc", "población_5_16", "tasa_matriculación_5_16", "cobertura_neta", "cobertura_bruta", "tamaño_promedio_de_grupo", "sedes_conectadas_a_internet", "deserción", "aprobación", "reprobación", "repitencia")
+
+data_educacion_sub <- data_educacion[, which(colnames(data_educacion) %in% cols_edu)]
+
+edu_joined <- muni_joined %>%
+  left_join(data_educacion_sub, by = c("municipio" = "etc"), copy = TRUE)
+
+str(edu_joined)
+```
+
+Removemos las filas con NA
+
+```{r rem_na_edu_j}
+edu_joined <- edu_joined[complete.cases(edu_joined), ] %>% filter(indice_hurtos <= 10)
+str(edu_joined)
 ```
 
 # Analisis Univariado
@@ -272,4 +342,93 @@ edad_count_fix <- edad_count %>%
 
 ggplot(edad_count_fix) +
   geom_point(aes(x = edad, y = cantidad_hurtos))
+```
+
+## Educación {.tabset .tabset-pills}
+
+### Población entre 5 y 16 años
+
+```{r uni_edu_pob}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, población_5_16), y = población_5_16)) +
+  coord_flip()
+```
+
+### Tasa matriculacion entre 5 y 16 años
+
+```{r uni_edu_tasa}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, tasa_matriculación_5_16), y = tasa_matriculación_5_16)) +
+  coord_flip()
+```
+
+### Cobertura neta
+
+```{r uni_edu_con}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, cobertura_neta), y = cobertura_neta)) +
+  coord_flip()
+```
+
+### Cobertura bruta
+
+```{r uni_edu_cobb}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, cobertura_bruta), y = cobertura_bruta)) +
+  coord_flip()
+```
+
+### Tamaño promedio de grupo
+
+```{r uni_edu_tam}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, tamaño_promedio_de_grupo), y = tamaño_promedio_de_grupo)) +
+  coord_flip()
+```
+
+### Sedes conectadas a internet
+
+```{r uni_edu_sed}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, sedes_conectadas_a_internet), y = sedes_conectadas_a_internet)) +
+  coord_flip()
+```
+
+### Deserción
+
+```{r uni_edu_des}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, deserción), y = deserción)) +
+  coord_flip()
+```
+
+### Aprobación
+
+```{r uni_edu_ap}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, aprobación), y = aprobación)) +
+  coord_flip()
+```
+
+### Reprobación
+
+```{r uni_edu_rep}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, reprobación), y = reprobación)) +
+  coord_flip()
+```
+
+### Repitencia
+
+```{r uni_edu_repi}
+ggplot(data_educacion) +
+  geom_point(aes(x = reorder(etc, repitencia), y = repitencia)) +
+  coord_flip()
+```
+
+# Analisis Multivariado
+
+```{r multi}
+ggplot(edu_joined) +
+  geom_point(aes(x = tasa_matriculación_5_16, y = indice_hurtos))
 ```
