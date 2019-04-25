@@ -287,10 +287,14 @@ multi_muni_joined <- muni_top_sorted %>%
 
 head(multi_muni_joined)
 
+sexo_spread <- data_hurto %>%
+  count(municipio, sexo) %>%
+  group_by(municipio) %>%
+  mutate(prop = n / sum(n)) %>%
+  select(-n) %>%
+  spread(key = sexo, value = prop)
 
-
-
-
+head(sexo_spread)
 ```
 
 

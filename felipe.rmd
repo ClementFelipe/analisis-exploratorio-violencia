@@ -429,6 +429,8 @@ ggplot(data_educacion) +
 # Analisis Multivariado
 
 ```{r multi}
+edu_joined
+
 ggplot(edu_joined) +
   geom_point(aes(x = tasa_matriculación_5_16, y = indice_hurtos))
 ```
