@@ -179,8 +179,6 @@ muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017),]
 sum(is.na(muni_joined$cantidad_hurtos))
 ```
 
-Pizza
-
 ```{r ugh}
 muni_top <- head(muni_joined_sorted, 30)
 muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos),]
@@ -203,7 +201,7 @@ Vamos a observar como esta la distribución de estos datos
 
 ```{r uni_hurtos_l}
 
-columns_f_l <- c("departamento", "zona", "dia", "clase_de_sitio", "arma_empleada", "movil_victima", "sexo")
+columns_f_l <- c("municipio","departamento", "zona", "dia", "clase_de_sitio", "arma_empleada", "movil_victima", "sexo")
 data_hurto_f_l <- data_hurto[, colnames(data_hurto) %in% columns_f_l]
 summary(data_hurto_f_l)
 ```
@@ -225,6 +223,10 @@ plot_factor <- function(data, column, top = 30) {
     labs(x = column, y = "Cantidad de hurtos reportados") +
     theme(axis.text.y = element_text(size = (rel(0.8))))
 }
+```
+###municipio
+```{r uni_hurto_muni, warning=FALSE}
+plot_factor(data_hurto_f_l, "municipio", 20)
 ```
 
 ###Departamentos
@@ -256,6 +258,39 @@ plot_factor(data_hurto_f_l, "movil_victima", 20)
 ###Sexo
 ```{r uni_hurto_Sexo, warning=FALSE}
 plot_factor(data_hurto_f_l, "sexo", 20)
+```
+
+##Analisis multivariado dataset hurto {.tabset .tabset-pills}
+----------
+Analicemos la relación entre las variables:
++bla
++bla
++bla
+
+```{r multi_hurtos_l}
+
+hurtos_per__muni_sexo <- data_hurto_tidy %>%
+  group_by(municipio,sexo) %>%
+  summarize(
+    cantidad_hurtos=n()
+  )
+  
+hurtos_per__muni_sexo <- data_hurto_tidy %>%
+  group_by(municipio,sexo) %>%
+  summarize(
+    cantidad_hurtos=n()
+  )
+head(hurtos_per__muni_sexo)
+
+multi_muni_joined <- muni_top_sorted %>%
+  left_join(hurtos_per__muni_sexo, by = c("municipio" = "municipio"), copy = TRUE)
+
+head(multi_muni_joined)
+
+
+
+
+
 ```
 
 
