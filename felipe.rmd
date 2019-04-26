@@ -25,6 +25,7 @@ Aqui cargamos los datos de las fuentes blah blah...
 ```{r load_hurto}
 data_hurto_raw <- read.csv("hurto.csv")
 str(data_hurto_raw)
+head(data_hurto_raw)
 ```
 
 ## Pobloacion por Municipio
@@ -113,6 +114,7 @@ Se cambia el orden de unos factores
 data_hurto$escolaridad <- factor(data_hurto$escolaridad, levels = c("NO REPORTADO", "ANALFABETA", "PRIMARIA", "SECUNDARIA", "TECNOLOGO", "TECNICO", "SUPERIOR"))
 
 data_hurto$dia <- factor(data_hurto$dia, levels = c("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"))
+head(data_hurto)
 ```
 
 ## Poblacion por municipio
@@ -213,6 +215,30 @@ data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_etc)
 data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_capital)
 
 data_educacion <- data_educacion_tidy
+```
+
+## Limpieza Dataset sobre armas incautadas en 2017
+
+Este data set cuenta con variables que no aportan para nuestro analisis tales como: 
+* Fecha
+* Hora
+* Permiso
+* Código.DANE
+* Cantidad
+Ya que estas representan códigos de numeraciòn o tienen solo un valor asignado.
+
+```{r delete_fuego}
+removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
+
+data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% removable_columns_2)]
+
+str(data_incauta_tidy)
+```
+Normalizamos los nombres de las columnas.
+
+```{r norm_fuego}
+colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
+str(data_incauta_tidy)
 ```
 
 # Pre-procesamiento
@@ -950,30 +976,6 @@ ggplot(edu_joined) +
 ```
 
 # Dataset Incautación armas de fuego 2017
-
-## Limpieza Dataset sobre armas incautadas en 2017
-
-Este data set cuenta con variables que no aportan para nuestro analisis tales como: 
-* Fecha
-* Hora
-* Permiso
-* Código.DANE
-* Cantidad
-Ya que estas representan códigos de numeraciòn o tienen solo un valor asignado.
-
-```{r delete_fuego}
-removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
-
-data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% removable_columns_2)]
-
-str(data_incauta_tidy)
-```
-Normalizamos los nombres de las columnas.
-
-```{r norm_fuego}
-colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
-str(data_incauta_tidy)
-```
 
 ## Analisis univariado dataset Armas {.tabset .tabset-pills}
 Aquí se tiene el analisis univariado para las siguientes variables:
