@@ -22,7 +22,7 @@ library(fastDummies)
 library(scales)
 ```
 
-# Carga de Datos
+# Carga de Datos {.tabset .tabset-pills}
 
 Aqui cargamos los datos de las fuentes blah blah...
 
@@ -40,7 +40,14 @@ data_municipios_raw <- read.csv("municipios.csv")
 str(data_municipios_raw)
 ```
 
-# Limpieza Dataset Hurto
+## Estadisticas Educación por ETC
+
+```{r load_edu}
+data_educacion_raw <- read.csv("educacion.csv")
+str(data_educacion_raw)
+```
+
+# Limpieza {.tabset .tabset-pills}
 
 Limpiaremos blah...
 
@@ -59,7 +66,7 @@ Se eliminan las columnas:
 ```{r delete_hurtos}
 removable_columns <- c("Fecha", "Hora", "Barrio", "País.de.nacimiento", "Profesión", "Código.DANE", "Cantidad")
 
-data_hurto_tidy <- data_hurto_raw[,-which(colnames(data_hurto_raw) %in% removable_columns)]
+data_hurto_tidy <- data_hurto_raw[, -which(colnames(data_hurto_raw) %in% removable_columns)]
 
 str(data_hurto_tidy)
 ```
@@ -78,25 +85,32 @@ Se elimina `(CT)` de los datos en la columna `Municipio`.
 remove_capital <- function(city_factor) {
   city <- as.character(city_factor)
   no_capital <- gsub(" \\(CT\\)", "", city)
-  
+
   return(no_capital)
 }
 
 data_hurto_tidy$municipio <- as.factor(sapply(data_hurto_tidy$municipio, remove_capital))
 str(data_hurto_tidy)
-summary(data_hurto_tidy)
 ```
 
 Se cambian todos los `-` por `NA` y se eliminan las observaciones con por lo menos un `NA`.
 
 ```{r nas}
-which(names(summary(data_hurto_tidy$clase_de_sitio)) == '-')
+which(names(summary(data_hurto_tidy$clase_de_sitio)) == "-")
 
 data_hurto <- data_hurto_tidy
 data_hurto[data_hurto_tidy == "-"] <- NA
-data_hurto <- data_hurto[complete.cases(data_hurto),]
+data_hurto <- data_hurto[complete.cases(data_hurto), ]
 
 str(data_hurto)
+```
+
+Se cambia el orden de unos factores
+
+```{r factord}
+data_hurto$escolaridad <- factor(data_hurto$escolaridad, levels = c("NO REPORTADO", "ANALFABETA", "PRIMARIA", "SECUNDARIA", "TECNOLOGO", "TECNICO", "SUPERIOR"))
+
+data_hurto$dia <- factor(data_hurto$dia, levels = c("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"))
 ```
 
 ## Poblacion por municipio
@@ -140,7 +154,7 @@ str(data_municipios_tidy)
 Eliminamos la fila que tiene el total nacional
 
 ```{r remove_total}
-data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL",]
+data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL", ]
 
 str(data_municipios_tidy)
 ```
@@ -148,12 +162,55 @@ str(data_municipios_tidy)
 Eliminar la coma de `BOGOTA, D.C`
 
 ```{r rem_bog}
-bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.",]
+bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ]
 bogota_row$municipio <- c("BOGOTÁ D.C.")
 
-data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.",] <- bogota_row
+data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ] <- bogota_row
 
 data_municipios <- data_municipios_tidy
+```
+
+## Educacion
+
+Eliminamos la columna `CÓDIGO_ETC` 
+
+```{r clean_edu}
+data_educacion_tidy <- data_educacion_raw
+
+data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy) == "CÓDIGO_ETC")]
+str(data_educacion_tidy)
+```
+
+Normalizamos los nombres de las columnas
+
+```{r clean_edu_col}
+colnames(data_educacion_tidy) <- sapply(colnames(data_educacion_tidy), tolower)
+```
+
+Conservamos solo el año 2017 y posteriormente eliminamos la columna
+
+```{r clean_edu_year}
+data_educacion_tidy <- data_educacion_tidy[data_educacion_tidy$año == 2017, ]
+data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy) == "año")]
+
+str(data_educacion_tidy)
+```
+
+Transformamos las ETC en mayuscula y removemos el (ETC)
+
+```{r clean_edu_upper}
+remove_etc <- function(city_factor) {
+  city <- as.character(city_factor)
+  no_capital <- gsub(" \\(ETC\\)", "", city)
+
+  return(no_capital)
+}
+
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, toupper)
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_etc)
+data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_capital)
+
+data_educacion <- data_educacion_tidy
 ```
 
 # Pre-procesamiento
@@ -174,20 +231,22 @@ attach(muni_joined)
 muni_joined$indice_hurtos <- (cantidad_hurtos / poblacion_2017) * 1000
 detach(muni_joined)
 
-muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017),]
+muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017), ]
 
 sum(is.na(muni_joined$cantidad_hurtos))
 ```
 
+Pizza
+
 ```{r ugh}
 muni_top <- head(muni_joined_sorted, 30)
-muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos),]
+muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos), ]
 muni_top_sorted
 ```
 
 # Analisis Lina
 
-##Analisis univariado dataset hurto {.tabset .tabset-pills}
+## Analisis univariado dataset hurto {.tabset .tabset-pills}
 Aquí se tiene el analisis univariado para las siguientes variables:
 *Departamento
 *Zona
@@ -224,43 +283,43 @@ plot_factor <- function(data, column, top = 30) {
     theme(axis.text.y = element_text(size = (rel(0.8))))
 }
 ```
-###municipio
+### Municipio
 ```{r uni_hurto_muni, warning=FALSE}
 plot_factor(data_hurto_f_l, "municipio", 20)
 ```
 
-###Departamentos
+### Departamentos
 ```{r uni_hurto_departamento, warning=FALSE}
 plot_factor(data_hurto_f_l, "departamento", 20)
 ```
 
-###Zona
+### Zona
 ```{r uni_hurto_zona, warning=FALSE}
 plot_factor(data_hurto_f_l, "zona", 20)
 ```
 
-###Clase de sitio
+### Clase de sitio
 ```{r uni_hurto_clase_de_sitio, warning=FALSE}
 plot_factor(data_hurto_f_l, "clase_de_sitio", 20)
 #summary(data_hurto_tidy$clase_de_sitio) #esta da un output muy largo
 ```
 
-###Arma empleada
+### Arma empleada
 ```{r uni_hurto_arma, warning=FALSE}
 plot_factor(data_hurto_f_l, "arma_empleada", 20)
 ```
 
-###Movil Víctima
+### Movil Víctima
 ```{r uni_hurto_movil, warning=FALSE}
 plot_factor(data_hurto_f_l, "movil_victima", 20)
 ```
 
-###Sexo
+### Sexo
 ```{r uni_hurto_Sexo, warning=FALSE}
 plot_factor(data_hurto_f_l, "sexo", 20)
 ```
 
-##Analisis multivariado dataset hurto {.tabset .tabset-pills}
+## Analisis multivariado dataset hurto {.tabset .tabset-pills}
 ----------
 Analicemos la relación entre las variables:
 
@@ -345,7 +404,7 @@ colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_ar
 str(data_incauta_tidy)
 ```
 
-##Analisis univariado dataset Armas {.tabset .tabset-pills}
+## Analisis univariado dataset Armas {.tabset .tabset-pills}
 Aquí se tiene el analisis univariado para las siguientes variables:
 *Departamento
 *Municipio
@@ -383,37 +442,37 @@ plot_factor <- function(data, column, top = 30) {
 }
 ```
 
-###Departamentos
+### Departamentos
 ```{r uni_armas_depto, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "departamento", 20)
 ```
 
-###Municipio
+### Municipio
 ```{r uni_armas_muni, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "municipio", 20)
 ```
 
-###Día
+### Día
 ```{r uni_armas_dia, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "dia", 20)
 ```
 
-###Clase de arma empleada
+### Clase de arma empleada
 ```{r uni_armas_clase_de_arma, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "clase_de_arma", 20)
 ```
 
-###Zona
+### Zona
 ```{r uni_armas_zona, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "zona", 20)
 ```
 
-###Clase de sitio
+### Clase de sitio
 ```{r uni_armas_clase_de_sitio, warning=FALSE}
 plot_factor(data_hurto_f_l_armas, "clase_de_sitio", 20)
 ```
 
-##Analisis multivariado dataset armas incautadas {.tabset .tabset-pills}
+## Analisis multivariado dataset armas incautadas {.tabset .tabset-pills}
 ----------
 El dataset de armas incautadas fue seleccionado pues, se cuenta con la hipotesis de a mayor cantidad de armas incautadas, menor serà el indice de hurtos. De manera que se pasa a realizar un analisis multivariado con dicha variable.
 A continuaciòn los resultados:
