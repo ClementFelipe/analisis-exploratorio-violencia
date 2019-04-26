@@ -241,17 +241,13 @@ muni_top_sorted
 Añadimos la información del dataset de educación
 
 ```{r pre_edu}
-cols_edu <- c("etc", "población_5_16", "tasa_matriculación_5_16", "cobertura_neta", "cobertura_bruta", "tamaño_promedio_de_grupo", "sedes_conectadas_a_internet", "deserción", "aprobación", "reprobación", "repitencia")
-
-data_educacion_sub <- data_educacion[, which(colnames(data_educacion) %in% cols_edu)]
-
 edu_joined <- muni_joined %>%
-  left_join(data_educacion_sub, by = c("municipio" = "etc"), copy = TRUE)
+  left_join(data_educacion, by = c("municipio" = "etc"), copy = TRUE)
 
 str(edu_joined)
 ```
 
-Removemos las filas con NA
+Removemos las filas con NA y con indice de hurto mayor a 10
 
 ```{r rem_na_edu_j}
 edu_joined <- edu_joined[complete.cases(edu_joined), ] %>% filter(indice_hurtos <= 10)
@@ -463,9 +459,9 @@ esc_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(esc_joined, aes(x=moda_escolaridad, y=indice_hurtos, fill=moda_escolaridad)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(esc_joined, aes(x = moda_escolaridad, y = indice_hurtos, fill = moda_escolaridad)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 #### Indice <= 2
@@ -482,9 +478,9 @@ esc_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(esc_joined, aes(x=moda_escolaridad, y=indice_hurtos, fill=moda_escolaridad)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(esc_joined, aes(x = moda_escolaridad, y = indice_hurtos, fill = moda_escolaridad)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 ### Dia {.tabset .tabset-pills}
@@ -503,9 +499,9 @@ dia_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(dia_joined, aes(x=moda_dia, y=indice_hurtos, fill=moda_dia)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(dia_joined, aes(x = moda_dia, y = indice_hurtos, fill = moda_dia)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 #### Indice <= 2
@@ -522,9 +518,9 @@ dia_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(dia_joined, aes(x=moda_dia, y=indice_hurtos, fill=moda_dia)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(dia_joined, aes(x = moda_dia, y = indice_hurtos, fill = moda_dia)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 ### Movil Agresor {.tabset .tabset-pills}
@@ -543,9 +539,9 @@ movil_agresor_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(movil_agresor_joined, aes(x=moda_movil_agresor, y=indice_hurtos, fill=moda_movil_agresor)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X") +
+ggplot(movil_agresor_joined, aes(x = moda_movil_agresor, y = indice_hurtos, fill = moda_movil_agresor)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X") +
   coord_flip()
 ```
 
@@ -563,9 +559,9 @@ movil_agresor_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(movil_agresor_joined, aes(x=moda_movil_agresor, y=indice_hurtos, fill=moda_movil_agresor)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X") +
+ggplot(movil_agresor_joined, aes(x = moda_movil_agresor, y = indice_hurtos, fill = moda_movil_agresor)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X") +
   coord_flip()
 ```
 
@@ -585,9 +581,9 @@ edad_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(edad_joined, aes(x=moda_edad, y=indice_hurtos, fill=moda_edad)) + 
+ggplot(edad_joined, aes(x = moda_edad, y = indice_hurtos, fill = moda_edad)) +
   geom_point() +
-  theme(legend.position="X")
+  theme(legend.position = "X")
 ```
 
 #### Indice <= 2
@@ -604,9 +600,9 @@ edad_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(edad_joined, aes(x=moda_edad, y=indice_hurtos, fill=moda_edad)) + 
+ggplot(edad_joined, aes(x = moda_edad, y = indice_hurtos, fill = moda_edad)) +
   geom_point() +
-  theme(legend.position="X")
+  theme(legend.position = "X")
 ```
 
 ### Estado Civil {.tabset .tabset-pills}
@@ -625,9 +621,9 @@ estado_civil_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(estado_civil_joined, aes(x=moda_estado_civil, y=indice_hurtos, fill=moda_estado_civil)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(estado_civil_joined, aes(x = moda_estado_civil, y = indice_hurtos, fill = moda_estado_civil)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 #### Indice <= 2
@@ -644,9 +640,9 @@ estado_civil_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(estado_civil_joined, aes(x=moda_estado_civil, y=indice_hurtos, fill=moda_estado_civil)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X")
+ggplot(estado_civil_joined, aes(x = moda_estado_civil, y = indice_hurtos, fill = moda_estado_civil)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X")
 ```
 
 ### Clase de Empleado {.tabset .tabset-pills}
@@ -665,9 +661,9 @@ clase_de_empleado_joined <- muni_joined %>%
   filter(indice_hurtos <= 10) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(clase_de_empleado_joined, aes(x=moda_clase_de_empleado, y=indice_hurtos, fill=moda_clase_de_empleado)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X") +
+ggplot(clase_de_empleado_joined, aes(x = moda_clase_de_empleado, y = indice_hurtos, fill = moda_clase_de_empleado)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X") +
   coord_flip()
 ```
 
@@ -685,15 +681,184 @@ clase_de_empleado_joined <- muni_joined %>%
   filter(indice_hurtos <= 2) %>%
   left_join(esc_mode, by = c("municipio", "municipio"), copy = TRUE)
 
-ggplot(clase_de_empleado_joined, aes(x=moda_clase_de_empleado, y=indice_hurtos, fill=moda_clase_de_empleado)) + 
-  geom_boxplot(alpha=0.4) +
-  theme(legend.position="X") +
+ggplot(clase_de_empleado_joined, aes(x = moda_clase_de_empleado, y = indice_hurtos, fill = moda_clase_de_empleado)) +
+  geom_boxplot(alpha = 0.4) +
+  theme(legend.position = "X") +
   coord_flip()
 ```
 
 ## Educación y Hurto {.tabset .tabset-pills}
 
-```{r multi}
+```{r c}
+str(edu_joined)
+```
+
+### Tasa Matriculación personas entre 5 y 16 años
+
+```{r multi_eduh_tasa}
 ggplot(edu_joined) +
   geom_point(aes(x = tasa_matriculación_5_16, y = indice_hurtos))
 ```
+
+### Tamaño Promedio de Grupo
+
+```{r multi_eduh_tam}
+ggplot(edu_joined) +
+  geom_point(aes(x = tamaño_promedio_de_grupo, y = indice_hurtos))
+```
+
+### Sedes Conectadas a Internet
+
+```{r multi_eduh_sed}
+ggplot(edu_joined) +
+  geom_point(aes(x = sedes_conectadas_a_internet, y = indice_hurtos))
+```
+
+### % Cobertura {.tabset .tabset-pills}
+
+#### Neta
+
+```{r mumulti_eduh_cob_n}
+ggplot(edu_joined) +
+  geom_point(aes(x = cobertura_neta, y = indice_hurtos))
+```
+
+#### Transición
+
+```{r multi_eduh_cob_t}
+ggplot(edu_joined) +
+  geom_point(aes(x = cobertura_neta_transición, y = indice_hurtos))
+```
+
+#### Primaria
+
+```{r multi_eduh_cob_p}
+ggplot(edu_joined) +
+  geom_point(aes(x = cobertura_neta_primaria, y = indice_hurtos))
+```
+
+#### Secundaria
+
+```{r multi_eduh_cob_s}
+ggplot(edu_joined) +
+  geom_point(aes(x = cobertura_neta_secundaria, y = indice_hurtos))
+```
+
+#### Media
+
+```{r multi_eduh_cob_m}
+ggplot(edu_joined) +
+  geom_point(aes(x = cobertura_neta_media, y = indice_hurtos))
+```
+
+### % Deserción {.tabset .tabset-pills}
+
+#### Neta
+
+```{r mumulti_eduh_des_n}
+ggplot(edu_joined) +
+  geom_point(aes(x = deserción, y = indice_hurtos))
+```
+
+#### Transición
+
+```{r multi_eduh_des_t}
+ggplot(edu_joined) +
+  geom_point(aes(x = deserción_transición, y = indice_hurtos))
+```
+
+#### Primaria
+
+```{r multi_eduh_des_p}
+ggplot(edu_joined) +
+  geom_point(aes(x = deserción_primaria, y = indice_hurtos))
+```
+
+#### Secundaria
+
+```{r multi_eduh_des_s}
+ggplot(edu_joined) +
+  geom_point(aes(x = deserción_secundaria, y = indice_hurtos))
+```
+
+#### Media
+
+```{r multi_eduh_des_m}
+ggplot(edu_joined) +
+  geom_point(aes(x = deserción_media, y = indice_hurtos))
+```
+
+### % Aprobación {.tabset .tabset-pills}
+
+#### Neta
+
+```{r mumulti_eduh_apb_n}
+ggplot(edu_joined) +
+  geom_point(aes(x = aprobación, y = indice_hurtos))
+```
+
+#### Transición
+
+```{r multi_eduh_apb_t}
+ggplot(edu_joined) +
+  geom_point(aes(x = aprobación_transición, y = indice_hurtos))
+```
+
+#### Primaria
+
+```{r multi_eduh_apb_p}
+ggplot(edu_joined) +
+  geom_point(aes(x = aprobación_primaria, y = indice_hurtos))
+```
+
+#### Secundaria
+
+```{r multi_eduh_apb_s}
+ggplot(edu_joined) +
+  geom_point(aes(x = aprobación_secundaria, y = indice_hurtos))
+```
+
+#### Media
+
+```{r multi_eduh_apb_m}
+ggplot(edu_joined) +
+  geom_point(aes(x = aprobación_media, y = indice_hurtos))
+```
+
+### % Reprobación {.tabset .tabset-pills}
+
+#### Neta
+
+```{r mumulti_eduh_repb_n}
+ggplot(edu_joined) +
+  geom_point(aes(x = reprobación, y = indice_hurtos))
+```
+
+#### Transición
+
+```{r multi_eduh_repb_t}
+ggplot(edu_joined) +
+  geom_point(aes(x = reprobación_transición, y = indice_hurtos))
+```
+
+#### Primaria
+
+```{r multi_eduh_repb_p}
+ggplot(edu_joined) +
+  geom_point(aes(x = reprobación_primaria, y = indice_hurtos))
+```
+
+#### Secundaria
+
+```{r multi_eduh_repb_s}
+ggplot(edu_joined) +
+  geom_point(aes(x = reprobación_secundaria, y = indice_hurtos))
+```
+
+#### Media
+
+```{r multi_eduh_repb_m}
+ggplot(edu_joined) +
+  geom_point(aes(x = reprobación_media, y = indice_hurtos))
+```
+
