@@ -18,7 +18,7 @@ gctorture(FALSE)
 
 # Carga de Datos {.tabset .tabset-pills}
 
-Aqui cargamos los datos de las fuentes blah blah...
+Cargamos los datasets.
 
 ## Hurto 2017
 
@@ -52,13 +52,13 @@ head(data_incauta_raw)
 
 # Limpieza {.tabset .tabset-pills}
 
-Limpiaremos blah...
+Limpiaremos los dataset.
 
 ## Hurto 2017
 
 Se eliminan las columnas:
 
-* `Fecha`, blah...
+* `Fecha`
 * `Hora`
 * `Barrio`
 * `País.de.nacimiento`
@@ -108,7 +108,7 @@ data_hurto <- data_hurto[complete.cases(data_hurto), ]
 str(data_hurto)
 ```
 
-Se cambia el orden de unos factores
+Se cambia el orden de unos factores.
 
 ```{r factord}
 data_hurto$escolaridad <- factor(data_hurto$escolaridad, levels = c("NO REPORTADO", "ANALFABETA", "PRIMARIA", "SECUNDARIA", "TECNOLOGO", "TECNICO", "SUPERIOR"))
@@ -131,14 +131,14 @@ data_municipios_tidy <- data_municipios_raw[, which(colnames(data_municipios_raw
 str(data_municipios_tidy)
 ```
 
-Normalizamos el nombre de cada columna
+Normalizamos el nombre de cada columna.
 
 ```{r norm_municipios}
 colnames(data_municipios_tidy) <- c("municipio", "poblacion_2017")
 str(data_municipios_tidy)
 ```
 
-Convertimos la columna poblacion_2017 en numerica
+Convertimos la columna poblacion_2017 en numerica.
 
 ```{r types_municipios}
 factor_to_int <- function(a_factor) {
@@ -155,7 +155,7 @@ data_municipios_tidy$municipio <- sapply(data_municipios_tidy$municipio, toupper
 str(data_municipios_tidy)
 ```
 
-Eliminamos la fila que tiene el total nacional
+Eliminamos la fila que tiene el total nacional.
 
 ```{r remove_total}
 data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL", ]
@@ -163,7 +163,7 @@ data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "
 str(data_municipios_tidy)
 ```
 
-Eliminar la coma de `BOGOTA, D.C`
+Eliminar la coma de `BOGOTA, D.C`.
 
 ```{r rem_bog}
 bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ]
@@ -176,7 +176,7 @@ data_municipios <- data_municipios_tidy
 
 ## Educacion
 
-Eliminamos la columna `CÓDIGO_ETC` 
+Eliminamos la columna `CÓDIGO_ETC`.
 
 ```{r clean_edu}
 data_educacion_tidy <- data_educacion_raw
@@ -185,13 +185,13 @@ data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy
 str(data_educacion_tidy)
 ```
 
-Normalizamos los nombres de las columnas
+Normalizamos los nombres de las columnas.
 
 ```{r clean_edu_col}
 colnames(data_educacion_tidy) <- sapply(colnames(data_educacion_tidy), tolower)
 ```
 
-Conservamos solo el año 2017 y posteriormente eliminamos la columna
+Conservamos solo el año 2017 y posteriormente eliminamos la columna.
 
 ```{r clean_edu_year}
 data_educacion_tidy <- data_educacion_tidy[data_educacion_tidy$año == 2017, ]
@@ -200,7 +200,7 @@ data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy
 str(data_educacion_tidy)
 ```
 
-Transformamos las ETC en mayuscula y removemos el (ETC)
+Transformamos las ETC en mayuscula y removemos el (ETC).
 
 ```{r clean_edu_upper}
 remove_etc <- function(city_factor) {
@@ -225,6 +225,7 @@ Este data set cuenta con variables que no aportan para nuestro analisis tales co
 * Permiso
 * Código.DANE
 * Cantidad
+
 Ya que estas representan códigos de numeraciòn o tienen solo un valor asignado.
 
 ```{r delete_fuego}
@@ -234,6 +235,7 @@ data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% re
 
 str(data_incauta_tidy)
 ```
+
 Normalizamos los nombres de las columnas.
 
 ```{r norm_fuego}
@@ -243,7 +245,7 @@ str(data_incauta_tidy)
 
 # Pre-procesamiento
 
-Calculamos indice por municipio...
+Calculamos indice de hurtos por municipio.
 
 ```{r index}
 hurtos_per_muni <- data_hurto %>%
@@ -264,7 +266,7 @@ muni_joined_sorted <- muni_joined[order(-muni_joined$poblacion_2017), ]
 sum(is.na(muni_joined$cantidad_hurtos))
 ```
 
-Pizza
+Visualizamos los 30 primeros municipios en indice de hurtos.
 
 ```{r ugh}
 muni_top <- head(muni_joined_sorted, 30)
@@ -272,7 +274,7 @@ muni_top_sorted <- muni_top[order(-muni_top$indice_hurtos), ]
 muni_top_sorted
 ```
 
-Añadimos la información del dataset de educación
+Añadimos la información del dataset de educación.
 
 ```{r pre_edu}
 edu_joined <- muni_joined %>%
@@ -281,7 +283,7 @@ edu_joined <- muni_joined %>%
 str(edu_joined)
 ```
 
-Removemos las filas con NA y con indice de hurto mayor a 10
+Removemos las filas con NA y con indice de hurto mayor a 10.
 
 ```{r rem_na_edu_j}
 edu_joined <- edu_joined[complete.cases(edu_joined), ] %>% filter(indice_hurtos <= 10)
@@ -379,7 +381,7 @@ ggplot(edad_count) +
   geom_point(aes(x = edad, y = cantidad_hurtos))
 ```
 
-Existen unos datos atipicos de edades mayores a 100, los eliminamos par visualizar la distribucion resultante
+Existen unos datos atipicos de edades mayores a 100, los eliminamos par visualizar la distribucion resultante.
 
 ```{r uni_edad_fix}
 edad_count_fix <- edad_count %>%
@@ -407,7 +409,6 @@ plot_factor(data_hurto_f_l, "zona", 20)
 ### Clase de sitio
 ```{r uni_hurto_clase_de_sitio, warning=FALSE}
 plot_factor(data_hurto_f_l, "clase_de_sitio", 20)
-#summary(data_hurto_tidy$clase_de_sitio) #esta da un output muy largo
 ```
 
 ### Arma empleada
@@ -425,7 +426,7 @@ plot_factor(data_hurto_f_l, "movil_victima", 20)
 plot_factor(data_hurto_f_l, "sexo", 20)
 ```
 
-## Educación {.tabset .tabset-pills}
+## Educación
 
 ### Población entre 5 y 16 años
 
@@ -518,7 +519,7 @@ Aquí se tiene el analisis univariado para las siguientes variables:
 *Clase de sitio
 
 A continuación empezamos a analizar cada una de las variables listadas.
-Vamos a observar como esta la distribución de estos datos
+Vamos a observar como esta la distribución de estos datos.
 
 ```{r uni_armas_l}
 data_armas<-data_incauta_tidy
