@@ -18,7 +18,14 @@ gctorture(FALSE)
 
 # Carga de Datos {.tabset .tabset-pills}
 
-Cargamos los datasets.
+Cargamos los siguientes datasets:
+
+* [Hurto a personas 2017](https://www.datos.gov.co/Seguridad-y-Defensa/Hurto-a-personas-2017/cwdd-8tiq)
+* [Estadisticas en educación básica por ETC](https://www.datos.gov.co/Educaci-n/ESTADISTICAS-EN-EDUCACI-N-BASICA-POR-ETC/sras-4t5p/data)
+* [Población municipal DANE](https://en.wikipedia.org/wiki/Bogotá#cite_note-Poblacion_Municipal_DANE-8)
+* Incautación de armas de fuego 2017
+
+Para mas información sobre cada uno, se puede visitar el enlace asociado.
 
 ## Hurto 2017
 
@@ -33,6 +40,7 @@ head(data_hurto_raw)
 ```{r load_municipios}
 data_municipios_raw <- read.csv("municipios.csv")
 str(data_municipios_raw)
+head(data_municipios_raw)
 ```
 
 ## Estadisticas Educación por ETC
@@ -40,6 +48,7 @@ str(data_municipios_raw)
 ```{r load_edu}
 data_educacion_raw <- read.csv("educacion.csv")
 str(data_educacion_raw)
+head(data_educacion_raw)
 ```
 
 ## Incautacón Armas de Fuego
@@ -58,13 +67,13 @@ Limpiaremos los dataset.
 
 Se eliminan las columnas:
 
-* `Fecha`
-* `Hora`
-* `Barrio`
-* `País.de.nacimiento`
-* `Profesión`
-* `Código.DANE`
-* `Cantidad`
+* `Fecha`: No se pretende realizar analisis de hurtos reportados en el tiempo
+* `Hora`: No se pretende realizar analisis de hurtos reportados en el tiempo
+* `Barrio`: Demasiados factores para analizar, no sería posible responder una de las preguntas observando esta variable
+* `País.de.nacimiento`: No sería posible responder una de las preguntas observando esta variable, casi el 100% de los casos reportados son de Colombianos
+* `Profesión`: Demasiados factores para analizar, no sería posible responder una de las preguntas observando esta variable
+* `Código.DANE`: No tiene significado
+* `Cantidad`: No tiene significado
 
 ```{r delete_hurtos}
 removable_columns <- c("Fecha", "Hora", "Barrio", "País.de.nacimiento", "Profesión", "Código.DANE", "Cantidad")
@@ -74,7 +83,7 @@ data_hurto_tidy <- data_hurto_raw[, -which(colnames(data_hurto_raw) %in% removab
 str(data_hurto_tidy)
 ```
 
-Normalizamos los nombres de las columnas.
+Normalizamos los nombres de las columnas, removiendo tildes y dejando todos los caracteres en minuscula.
 
 ```{r norm_hurtos}
 colnames(data_hurto_tidy) <- c("departamento", "municipio", "dia", "zona", "clase_de_sitio", "arma_empleada", "movil_agresor", "movil_victima", "edad", "sexo", "estado_civil", "clase_de_empleado", "escolaridad")
@@ -82,7 +91,7 @@ colnames(data_hurto_tidy) <- c("departamento", "municipio", "dia", "zona", "clas
 str(data_hurto_tidy)
 ```
 
-Se elimina `(CT)` de los datos en la columna `Municipio`.
+Se elimina `(CT)` de los datos en la columna `Municipio`, que significa que el municipio es la capital de su departamento, estos caracteres dificultan hacer el join con otros datasets.
 
 ```{r clean_hurto}
 remove_capital <- function(city_factor) {
@@ -108,7 +117,7 @@ data_hurto <- data_hurto[complete.cases(data_hurto), ]
 str(data_hurto)
 ```
 
-Se cambia el orden de unos factores.
+Se cambia el orden de los factores de `escolaridad` y `dia`.
 
 ```{r factord}
 data_hurto$escolaridad <- factor(data_hurto$escolaridad, levels = c("NO REPORTADO", "ANALFABETA", "PRIMARIA", "SECUNDARIA", "TECNOLOGO", "TECNICO", "SUPERIOR"))
@@ -121,8 +130,8 @@ head(data_hurto)
 
 Dejamos:
 
-* MPIO que es el nombre del municipio
-* X2017 que es la poblacion por municipio en 2017
+* `MPIO` que es el nombre del municipio
+* `X2017` que es la poblacion por municipio en 2017
 
 ```{r clean_minicipios}
 target_columns <- c("MPIO", "X2017")
@@ -131,14 +140,14 @@ data_municipios_tidy <- data_municipios_raw[, which(colnames(data_municipios_raw
 str(data_municipios_tidy)
 ```
 
-Normalizamos el nombre de cada columna.
+Normalizamos el nombre de cada columna, dejandolos en minuscula y sin tildes.
 
 ```{r norm_municipios}
 colnames(data_municipios_tidy) <- c("municipio", "poblacion_2017")
 str(data_municipios_tidy)
 ```
 
-Convertimos la columna poblacion_2017 en numerica.
+Convertimos la columna `poblacion_2017` de factor a numerica.
 
 ```{r types_municipios}
 factor_to_int <- function(a_factor) {
@@ -155,7 +164,7 @@ data_municipios_tidy$municipio <- sapply(data_municipios_tidy$municipio, toupper
 str(data_municipios_tidy)
 ```
 
-Eliminamos la fila que tiene el total nacional.
+Eliminamos la fila que tiene el total nacional, no interesa para el analisis.
 
 ```{r remove_total}
 data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "TOTAL NACIONAL", ]
@@ -163,7 +172,7 @@ data_municipios_tidy <- data_municipios_tidy[data_municipios_tidy$municipio != "
 str(data_municipios_tidy)
 ```
 
-Eliminar la coma de `BOGOTA, D.C`.
+Se elimina la coma de `BOGOTA, D.C`, pues dificulta hacer el join con otro dataset.
 
 ```{r rem_bog}
 bogota_row <- data_municipios_tidy[data_municipios_tidy$municipio == "BOGOTÁ, D.C.", ]
@@ -176,7 +185,7 @@ data_municipios <- data_municipios_tidy
 
 ## Educacion
 
-Eliminamos la columna `CÓDIGO_ETC`.
+Eliminamos la columna `CÓDIGO_ETC`, pues no interesa para el analisis.
 
 ```{r clean_edu}
 data_educacion_tidy <- data_educacion_raw
@@ -185,7 +194,7 @@ data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy
 str(data_educacion_tidy)
 ```
 
-Normalizamos los nombres de las columnas.
+Normalizamos los nombres de las columnas, llevandolas a minuscula.
 
 ```{r clean_edu_col}
 colnames(data_educacion_tidy) <- sapply(colnames(data_educacion_tidy), tolower)
@@ -200,7 +209,7 @@ data_educacion_tidy <- data_educacion_tidy[, -which(colnames(data_educacion_tidy
 str(data_educacion_tidy)
 ```
 
-Transformamos las ETC en mayuscula y removemos el (ETC).
+Transformamos las ETC en mayuscula y removemos el `(ETC)`, lo cual dificulta el join con otro dataset.
 
 ```{r clean_edu_upper}
 remove_etc <- function(city_factor) {
