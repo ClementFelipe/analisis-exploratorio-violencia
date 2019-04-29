@@ -8,7 +8,6 @@ output:
     toc_depth: 3
     number_sections: true
     theme: yeti
-    highlight: tango
 ---
 
 ```{r libs, include=FALSE}
@@ -228,7 +227,8 @@ data_educacion <- data_educacion_tidy
 
 ## Limpieza Dataset sobre armas incautadas en 2017
 
-Este data set cuenta con variables que no aportan para nuestro analisis tales como: 
+Este data set cuenta con variables que no aportan para nuestro analisis tales como:
+
 * Fecha
 * Hora
 * Permiso
@@ -240,7 +240,7 @@ Ya que estas representan códigos de numeraciòn o tienen solo un valor asignado
 ```{r delete_fuego}
 removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
 
-data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% removable_columns_2)]
+data_incauta_tidy <- data_incauta_raw[, -which(colnames(data_incauta_raw) %in% removable_columns_2)]
 
 str(data_incauta_tidy)
 ```
@@ -248,13 +248,13 @@ str(data_incauta_tidy)
 Normalizamos los nombres de las columnas.
 
 ```{r norm_fuego}
-colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
+colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia", "clase_de_arma", "zona", "clase_de_sitio")
 str(data_incauta_tidy)
 ```
 
 # Pre-procesamiento
 
-Calculamos indice de hurtos por municipio.
+Calculamos indice de hurtos por municipio (por cada 1000 personas), dividiendo la cantidad de hurtos reportados / población del municipio.
 
 ```{r index}
 hurtos_per_muni <- data_hurto %>%
@@ -309,10 +309,8 @@ columns_f <- c("edad", "escolaridad", "dia", "municipio", "movil_agresor", "clas
 data_hurto_f <- data_hurto[, colnames(data_hurto) %in% columns_f]
 
 summary(data_hurto_f)
-```
 
-```{r uni_hurtos_l}
-columns_f_l <- c("municipio","departamento", "zona", "dia", "clase_de_sitio", "arma_empleada", "movil_victima", "sexo")
+columns_f_l <- c("municipio", "departamento", "zona", "dia", "clase_de_sitio", "arma_empleada", "movil_victima", "sexo")
 data_hurto_f_l <- data_hurto[, colnames(data_hurto) %in% columns_f_l]
 
 summary(data_hurto_f_l)
@@ -435,7 +433,7 @@ plot_factor(data_hurto_f_l, "movil_victima", 20)
 plot_factor(data_hurto_f_l, "sexo", 20)
 ```
 
-## Educación
+## Educación {.tabset .tabset-pills}
 
 ### Población entre 5 y 16 años
 
@@ -520,23 +518,23 @@ ggplot(data_educacion) +
 ## Analisis univariado dataset Armas {.tabset .tabset-pills}
 
 Aquí se tiene el analisis univariado para las siguientes variables:
-*Departamento
-*Municipio
-*Día
-*Clase de arma
-*Zona
-*Clase de sitio
+
+* Departamento
+* Municipio
+* Día
+* Clase de arma
+* Zona
+* Clase de sitio
 
 A continuación empezamos a analizar cada una de las variables listadas.
 Vamos a observar como esta la distribución de estos datos.
 
 ```{r uni_armas_l}
-data_armas<-data_incauta_tidy
-columns_f_l_armas <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
+data_armas <- data_incauta_tidy
+columns_f_l_armas <- c("departamento", "municipio", "dia", "clase_de_arma", "zona", "clase_de_sitio")
 data_hurto_f_l_armas <- data_armas[, colnames(data_armas) %in% columns_f_l_armas]
 summary(data_hurto_f_l_armas)
-```
-```{r uni_fact_func_l_armas}
+
 plot_factor <- function(data, column, top = 30) {
   group_count <- data %>%
     group_by_(column) %>%
@@ -601,6 +599,8 @@ get_mode <- function(var) {
 
 ### Escolaridad {.tabset .tabset-pills}
 
+Se obtiene la moda de escolaridad de las victimas de robos en cada municipio, y comparamos esto contra el indice de criminalidad del mismo. Para los rangos: ANALFABETA -> SECUNDARIA y TECNOLOGO -> SUPERIOR encontramos que el indice (y su varianza) crece mediante crece el nivel de escolaridad. Esta relación no parece tener algún significado, aunque si es posible (para un indice menor a 2, comparando SECUNDARIA y TECNOLOGO) separar municipios con bajos y "altos" indices. Pero cuando se utiliza un maximo indice de 10, existen demasiados outliers, lo cual indica que esta variable no es suficiente para explicar el indice.
+
 #### Indice <= 10
 
 ```{r multi_hurto_esc_10}
@@ -641,6 +641,8 @@ ggplot(esc_joined, aes(x = moda_escolaridad, y = indice_hurtos, fill = moda_esco
 
 ### Dia {.tabset .tabset-pills}
 
+Entre Domingo y Sábado, se observa que el indice de criminalidad decrece levemente hasta el miercoles, y luego vuelve a subir.
+
 #### Indice <= 10
 
 ```{r multi_hurto_dia_10}
@@ -680,6 +682,8 @@ ggplot(dia_joined, aes(x = moda_dia, y = indice_hurtos, fill = moda_dia)) +
 ```
 
 ### Movil Agresor {.tabset .tabset-pills}
+
+El móvil del agresor no parece tener alguna forma de distinguir entre altos y bajos indices de hurtos.
 
 #### Indice <= 10
 
@@ -866,20 +870,22 @@ arma_spread <- arma_spread %>%
   left_join(muni_joined_sorted, by = c("municipio" = "municipio"), copy = TRUE)
 
 head(arma_spread)
-arma_spread <- arma_spread[order(-arma_spread$indice_hurtos),]
+arma_spread <- arma_spread[order(-arma_spread$indice_hurtos), ]
 head(arma_spread)
 
-ggplot(arma_spread) + 
-  stat_smooth(mapping = aes(x=arma_spread$`ARMA BLANCA / CORTOPUNZANTE`, y=arma_spread$indice_hurtos))
+ggplot(arma_spread) +
+  stat_smooth(mapping = aes(x = arma_spread$`ARMA BLANCA / CORTOPUNZANTE`, y = arma_spread$indice_hurtos))
 
-ggplot(arma_spread, aes(x=arma_spread$`ARMA BLANCA / CORTOPUNZANTE`, y=indice_hurtos)) +
-  geom_point() +ylim(0, 7) + xlim(0,1)
+ggplot(arma_spread, aes(x = arma_spread$`ARMA BLANCA / CORTOPUNZANTE`, y = indice_hurtos)) +
+  geom_point() + ylim(0, 7) + xlim(0, 1)
 
-ggplot(arma_spread, aes(x=arma_spread$`ARMA DE FUEGO`, y=indice_hurtos)) +
-  geom_point()+ylim(0, 7) + xlim(0,1)
+ggplot(arma_spread, aes(x = arma_spread$`ARMA DE FUEGO`, y = indice_hurtos)) +
+  geom_point() + ylim(0, 7) + xlim(0, 1)
 ```
 
 ## Educación y Hurto {.tabset .tabset-pills}
+
+Se realiza analisis bivariado de todas las variables en el dataset de educación básica contra el indice de hurtos a persona, por municipio. Se observa que ninguna de las variables del dataset de educación parecen tener una relación con el indice, por lo tanto este dataset no es útil para tratar de explicar el hurto a personas.
 
 ```{r c}
 str(edu_joined)
@@ -889,21 +895,24 @@ str(edu_joined)
 
 ```{r multi_eduh_tasa}
 ggplot(edu_joined) +
-  geom_point(aes(x = tasa_matriculación_5_16, y = indice_hurtos))
+  geom_point(aes(x = tasa_matriculación_5_16, y = indice_hurtos)) +
+  stat_smooth(aes(x = tasa_matriculación_5_16, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### Tamaño Promedio de Grupo
 
 ```{r multi_eduh_tam}
 ggplot(edu_joined) +
-  geom_point(aes(x = tamaño_promedio_de_grupo, y = indice_hurtos))
+  geom_point(aes(x = tamaño_promedio_de_grupo, y = indice_hurtos)) +
+  stat_smooth(aes(x = tamaño_promedio_de_grupo, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### Sedes Conectadas a Internet
 
 ```{r multi_eduh_sed}
 ggplot(edu_joined) +
-  geom_point(aes(x = sedes_conectadas_a_internet, y = indice_hurtos))
+  geom_point(aes(x = sedes_conectadas_a_internet, y = indice_hurtos)) +
+  stat_smooth(aes(x = sedes_conectadas_a_internet, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### % Cobertura {.tabset .tabset-pills}
@@ -912,35 +921,40 @@ ggplot(edu_joined) +
 
 ```{r mumulti_eduh_cob_n}
 ggplot(edu_joined) +
-  geom_point(aes(x = cobertura_neta, y = indice_hurtos))
+  geom_point(aes(x = cobertura_neta, y = indice_hurtos)) +
+  stat_smooth(aes(x = cobertura_neta, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Transición
 
 ```{r multi_eduh_cob_t}
 ggplot(edu_joined) +
-  geom_point(aes(x = cobertura_neta_transición, y = indice_hurtos))
+  geom_point(aes(x = cobertura_neta_transición, y = indice_hurtos)) +
+  stat_smooth(aes(x = cobertura_neta_transición, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Primaria
 
 ```{r multi_eduh_cob_p}
 ggplot(edu_joined) +
-  geom_point(aes(x = cobertura_neta_primaria, y = indice_hurtos))
+  geom_point(aes(x = cobertura_neta_primaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = cobertura_neta_primaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Secundaria
 
 ```{r multi_eduh_cob_s}
 ggplot(edu_joined) +
-  geom_point(aes(x = cobertura_neta_secundaria, y = indice_hurtos))
+  geom_point(aes(x = cobertura_neta_secundaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = cobertura_neta_secundaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Media
 
 ```{r multi_eduh_cob_m}
 ggplot(edu_joined) +
-  geom_point(aes(x = cobertura_neta_media, y = indice_hurtos))
+  geom_point(aes(x = cobertura_neta_media, y = indice_hurtos)) +
+  stat_smooth(aes(x = cobertura_neta_media, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### % Deserción {.tabset .tabset-pills}
@@ -949,35 +963,40 @@ ggplot(edu_joined) +
 
 ```{r mumulti_eduh_des_n}
 ggplot(edu_joined) +
-  geom_point(aes(x = deserción, y = indice_hurtos))
+  geom_point(aes(x = deserción, y = indice_hurtos)) +
+  stat_smooth(aes(x = deserción, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Transición
 
 ```{r multi_eduh_des_t}
 ggplot(edu_joined) +
-  geom_point(aes(x = deserción_transición, y = indice_hurtos))
+  geom_point(aes(x = deserción_transición, y = indice_hurtos)) +
+  stat_smooth(aes(x = deserción_transición, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Primaria
 
 ```{r multi_eduh_des_p}
 ggplot(edu_joined) +
-  geom_point(aes(x = deserción_primaria, y = indice_hurtos))
+  geom_point(aes(x = deserción_primaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = deserción_primaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Secundaria
 
 ```{r multi_eduh_des_s}
 ggplot(edu_joined) +
-  geom_point(aes(x = deserción_secundaria, y = indice_hurtos))
+  geom_point(aes(x = deserción_secundaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = deserción_secundaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Media
 
 ```{r multi_eduh_des_m}
 ggplot(edu_joined) +
-  geom_point(aes(x = deserción_media, y = indice_hurtos))
+  geom_point(aes(x = deserción_media, y = indice_hurtos)) +
+  stat_smooth(aes(x = deserción_media, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### % Aprobación {.tabset .tabset-pills}
@@ -986,35 +1005,40 @@ ggplot(edu_joined) +
 
 ```{r mumulti_eduh_apb_n}
 ggplot(edu_joined) +
-  geom_point(aes(x = aprobación, y = indice_hurtos))
+  geom_point(aes(x = aprobación, y = indice_hurtos)) +
+  stat_smooth(aes(x = aprobación, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Transición
 
 ```{r multi_eduh_apb_t}
 ggplot(edu_joined) +
-  geom_point(aes(x = aprobación_transición, y = indice_hurtos))
+  geom_point(aes(x = aprobación_transición, y = indice_hurtos)) +
+  stat_smooth(aes(x = aprobación_transición, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Primaria
 
 ```{r multi_eduh_apb_p}
 ggplot(edu_joined) +
-  geom_point(aes(x = aprobación_primaria, y = indice_hurtos))
+  geom_point(aes(x = aprobación_primaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = aprobación_primaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Secundaria
 
 ```{r multi_eduh_apb_s}
 ggplot(edu_joined) +
-  geom_point(aes(x = aprobación_secundaria, y = indice_hurtos))
+  geom_point(aes(x = aprobación_secundaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = aprobación_secundaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Media
 
 ```{r multi_eduh_apb_m}
 ggplot(edu_joined) +
-  geom_point(aes(x = aprobación_media, y = indice_hurtos))
+  geom_point(aes(x = aprobación_media, y = indice_hurtos)) +
+  stat_smooth(aes(x = aprobación_media, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ### % Reprobación {.tabset .tabset-pills}
@@ -1023,35 +1047,40 @@ ggplot(edu_joined) +
 
 ```{r mumulti_eduh_repb_n}
 ggplot(edu_joined) +
-  geom_point(aes(x = reprobación, y = indice_hurtos))
+  geom_point(aes(x = reprobación, y = indice_hurtos)) +
+  stat_smooth(aes(x = reprobación, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Transición
 
 ```{r multi_eduh_repb_t}
 ggplot(edu_joined) +
-  geom_point(aes(x = reprobación_transición, y = indice_hurtos))
+  geom_point(aes(x = reprobación_transición, y = indice_hurtos)) +
+  stat_smooth(aes(x = reprobación_transición, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Primaria
 
 ```{r multi_eduh_repb_p}
 ggplot(edu_joined) +
-  geom_point(aes(x = reprobación_primaria, y = indice_hurtos))
+  geom_point(aes(x = reprobación_primaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = reprobación_primaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Secundaria
 
 ```{r multi_eduh_repb_s}
 ggplot(edu_joined) +
-  geom_point(aes(x = reprobación_secundaria, y = indice_hurtos))
+  geom_point(aes(x = reprobación_secundaria, y = indice_hurtos)) +
+  stat_smooth(aes(x = reprobación_secundaria, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 #### Media
 
 ```{r multi_eduh_repb_m}
 ggplot(edu_joined) +
-  geom_point(aes(x = reprobación_media, y = indice_hurtos))
+  geom_point(aes(x = reprobación_media, y = indice_hurtos)) +
+  stat_smooth(aes(x = reprobación_media, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
 ## Analisis multivariado dataset armas incautadas
@@ -1069,7 +1098,7 @@ munic_spread <- data_hurto_f_l_armas %>%
   )
 
 munic_spread
-munic_spread_sorted <- munic_spread[order(-munic_spread$cantidad_incauta),]
+munic_spread_sorted <- munic_spread[order(-munic_spread$cantidad_incauta), ]
 munic_spread_sorted
 
 remove_capital_2 <- function(city_factor2) {
@@ -1088,17 +1117,17 @@ munic_spread_sorted <- munic_spread_sorted %>%
   left_join(muni_joined_sorted, by = c("municipio" = "municipio"), copy = TRUE)
 
 head(munic_spread_sorted)
-munic_spread_sorted <- munic_spread_sorted[order(-munic_spread_sorted$cantidad_incauta),]
+munic_spread_sorted <- munic_spread_sorted[order(-munic_spread_sorted$cantidad_incauta), ]
 
 str(munic_spread_sorted)
 
-ggplot(munic_spread_sorted) + 
-  stat_smooth(mapping = aes(x=munic_spread_sorted$cantidad_incauta, y=munic_spread_sorted$indice_hurtos)) + 
-  xlab("cantidad armas incautadas") + 
+ggplot(munic_spread_sorted) +
+  stat_smooth(mapping = aes(x = munic_spread_sorted$cantidad_incauta, y = munic_spread_sorted$indice_hurtos)) +
+  xlab("cantidad armas incautadas") +
   ylab("indice hurtos")
-munic_spread_sorted<-head(munic_spread_sorted,30)
+munic_spread_sorted <- head(munic_spread_sorted, 30)
 munic_spread_sorted
 
-ggplot(munic_spread_sorted, aes(x=cantidad_incauta, y=indice_hurtos)) +
-  geom_point()+geom_smooth() +ylim(0, 7) + xlim(0,500)
+ggplot(munic_spread_sorted, aes(x = cantidad_incauta, y = indice_hurtos)) +
+  geom_point() + geom_smooth() + ylim(0, 7) + xlim(0, 500)
 ```
