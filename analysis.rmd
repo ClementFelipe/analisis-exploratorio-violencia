@@ -22,7 +22,7 @@ Cargamos los siguientes datasets:
 * [Hurto a personas 2017](https://www.datos.gov.co/Seguridad-y-Defensa/Hurto-a-personas-2017/cwdd-8tiq)
 * [Estadisticas en educación básica por ETC](https://www.datos.gov.co/Educaci-n/ESTADISTICAS-EN-EDUCACI-N-BASICA-POR-ETC/sras-4t5p/data)
 * [Población municipal DANE](https://en.wikipedia.org/wiki/Bogotá#cite_note-Poblacion_Municipal_DANE-8)
-* Incautación de armas de fuego 2017
+* [Incautación de armas de fuego 2017](https://www.datos.gov.co/Seguridad-y-Defensa/Incautaci-n-armas-de-fuego-2017/secx-k2vf)
 
 Para mas información sobre cada uno, se puede visitar el enlace asociado.
 
@@ -225,17 +225,16 @@ data_educacion_tidy$etc <- sapply(data_educacion_tidy$etc, remove_capital)
 data_educacion <- data_educacion_tidy
 ```
 
-## Limpieza Dataset sobre armas incautadas en 2017
 
-Este data set cuenta con variables que no aportan para nuestro analisis tales como:
+## Armas Incautadas en 2017
 
-* Fecha
-* Hora
-* Permiso
-* Código.DANE
-* Cantidad
+Este data set cuenta con las siguientes variables que representan códigos de numeración o tienen solo un valor asignado, de manera que se pasan a eliminar:
 
-Ya que estas representan códigos de numeraciòn o tienen solo un valor asignado.
+* `Fecha`: No se pretende realizar analisis de hurtos reportados en el tiempo
+* `Hora`: No se pretende realizar analisis de hurtos reportados en el tiempo
+* `Permiso`: Demasiados factores para analizar, no sería posible responder una de las preguntas observando esta variable
+* `Código.DANE`: No tiene significado
+* `Cantidad`: No tiene significado
 
 ```{r delete_fuego}
 removable_columns_2 <- c("FECHA", "HORA", "PERMISO", "CÓDIGO.DANE", "CANTIDAD")
@@ -244,8 +243,7 @@ data_incauta_tidy <- data_incauta_raw[, -which(colnames(data_incauta_raw) %in% r
 
 str(data_incauta_tidy)
 ```
-
-Normalizamos los nombres de las columnas.
+Por último, se pasa a normalizar los nombres de las columnas para acciones de preprocesamiento.
 
 ```{r norm_fuego}
 colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia", "clase_de_arma", "zona", "clase_de_sitio")
@@ -301,7 +299,7 @@ str(edu_joined)
 
 # Analisis Univariado {.tabset .tabset-pills}
 
-## Hurtos {.tabset .tabset-pills}
+## Hurtos 2017 {.tabset .tabset-pills}
 
 ```{r uni_hurtos}
 columns_f <- c("edad", "escolaridad", "dia", "municipio", "movil_agresor", "clase_de_empleado", "estado_civil")
@@ -515,26 +513,30 @@ ggplot(data_educacion) +
   coord_flip()
 ```
 
-## Analisis univariado dataset Armas {.tabset .tabset-pills}
+## Armas Incautadas 2017 {.tabset .tabset-pills}
 
 Aquí se tiene el analisis univariado para las siguientes variables:
 
-* Departamento
-* Municipio
-* Día
-* Clase de arma
-* Zona
-* Clase de sitio
+* `Departamento`
+* `Municipio`
+* `Día`
+* `Clase`
+* `Zona`
+* `Clase de sitio`
 
-A continuación empezamos a analizar cada una de las variables listadas.
-Vamos a observar como esta la distribución de estos datos.
+A continuación empezamos a analizar cada una de las variables listadas y a observar como está la distribución de estos datos.
 
 ```{r uni_armas_l}
 data_armas <- data_incauta_tidy
 columns_f_l_armas <- c("departamento", "municipio", "dia", "clase_de_arma", "zona", "clase_de_sitio")
 data_hurto_f_l_armas <- data_armas[, colnames(data_armas) %in% columns_f_l_armas]
 summary(data_hurto_f_l_armas)
+```
 
+Este bloque de código nos permite crear las visualizaciones para cada uno de los factores analizados.
+De esta manera logramos minimizar las lineas de código que vamos a tener que usar.
+
+```{r uni_fact_func_l_armas}
 plot_factor <- function(data, column, top = 30) {
   group_count <- data %>%
     group_by_(column) %>%
@@ -883,7 +885,7 @@ ggplot(arma_spread, aes(x = arma_spread$`ARMA DE FUEGO`, y = indice_hurtos)) +
   geom_point() + ylim(0, 7) + xlim(0, 1)
 ```
 
-## Educación y Hurto {.tabset .tabset-pills}
+## Educación e Hurto {.tabset .tabset-pills}
 
 Se realiza analisis bivariado de todas las variables en el dataset de educación básica contra el indice de hurtos a persona, por municipio. Se observa que ninguna de las variables del dataset de educación parecen tener una relación con el indice, por lo tanto este dataset no es útil para tratar de explicar el hurto a personas.
 
@@ -1083,13 +1085,11 @@ ggplot(edu_joined) +
   stat_smooth(aes(x = reprobación_media, y = indice_hurtos), method = "lm", se = TRUE)
 ```
 
-## Analisis multivariado dataset armas incautadas
+## Armas incautadas e Indice de hurtos
 
-El dataset de armas incautadas fue seleccionado pues, se cuenta con la hipotesis de a mayor cantidad de armas incautadas, menor serà el indice de hurtos. De manera que se pasa a realizar un analisis multivariado con dicha variable.
-A continuaciòn los resultados:
+El dataset de armas incautadas fue seleccionado pues, se cuenta con la hipotesis de a mayor cantidad de armas incautadas, menor será el indice de hurtos. De manera que se pasa a realizar un analisis multivariado con dicha variable. A continuaciòn los resultados:
 
 ```{r multi_hurtos_l, warning=FALSE}
-head(data_hurto_f_l_armas)
 
 munic_spread <- data_hurto_f_l_armas %>%
   group_by(municipio) %>%
@@ -1097,9 +1097,7 @@ munic_spread <- data_hurto_f_l_armas %>%
     cantidad_incauta = n()
   )
 
-munic_spread
-munic_spread_sorted <- munic_spread[order(-munic_spread$cantidad_incauta), ]
-munic_spread_sorted
+munic_spread_sorted <- munic_spread[order(-munic_spread$cantidad_incauta),]
 
 remove_capital_2 <- function(city_factor2) {
   city <- as.character(city_factor2)
@@ -1109,25 +1107,16 @@ remove_capital_2 <- function(city_factor2) {
 }
 
 munic_spread_sorted$municipio <- as.factor(sapply(munic_spread_sorted$municipio, remove_capital_2))
-munic_spread_sorted
-
-head(munic_spread_sorted)
-head(muni_joined_sorted)
 munic_spread_sorted <- munic_spread_sorted %>%
   left_join(muni_joined_sorted, by = c("municipio" = "municipio"), copy = TRUE)
+munic_spread_sorted <- munic_spread_sorted[order(-munic_spread_sorted$cantidad_incauta),]
+
+munic_spread_sorted<-head(munic_spread_sorted,30)
 
 head(munic_spread_sorted)
-munic_spread_sorted <- munic_spread_sorted[order(-munic_spread_sorted$cantidad_incauta), ]
 
-str(munic_spread_sorted)
-
-ggplot(munic_spread_sorted) +
-  stat_smooth(mapping = aes(x = munic_spread_sorted$cantidad_incauta, y = munic_spread_sorted$indice_hurtos)) +
-  xlab("cantidad armas incautadas") +
-  ylab("indice hurtos")
-munic_spread_sorted <- head(munic_spread_sorted, 30)
-munic_spread_sorted
-
-ggplot(munic_spread_sorted, aes(x = cantidad_incauta, y = indice_hurtos)) +
-  geom_point() + geom_smooth() + ylim(0, 7) + xlim(0, 500)
+ggplot(munic_spread_sorted, aes(x=cantidad_incauta, y=indice_hurtos)) +
+  geom_point()+geom_smooth() +ylim(0, 7) + xlim(0,500)
 ```
+
+La gráfica anterior nos permite observar que los indices de hurtos pueden estar inversamente relacionados con los proces de incautación presentados en el municipio.
