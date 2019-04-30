@@ -244,8 +244,7 @@ data_incauta_tidy <- data_incauta_raw[,-which(colnames(data_incauta_raw) %in% re
 
 str(data_incauta_tidy)
 ```
-
-Normalizamos los nombres de las columnas.
+Por último, se pasa a normalizar los nombres de las columnas para acciones de preprocesamiento.
 
 ```{r norm_fuego}
 colnames(data_incauta_tidy) <- c("departamento", "municipio", "dia","clase_de_arma", "zona", "clase_de_sitio")
